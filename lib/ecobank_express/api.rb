@@ -75,7 +75,7 @@ module EcobankExpress
       response
     end
 
-    def self.generate_sucrure_hash(body)
+    def self.generate_secure_hash(body)
       payload = body.except("secureHash", "secure_hash").values.join("")
       data = payload + API_CONFIG[:lab_key]
       digest = Digest::SHA512.new
@@ -126,7 +126,7 @@ module EcobankExpress
         # "secureHash": "a43aa74662060b7b9c942dd7ace565a0919118db758bcd71a0f5c7cd7e349f6309b02866b6156ef9171a1b23119c71e77db2edd38cc89963d7f34b541d6dc461"
       }.as_json
       body = body.merge(
-        "secureHash" => generate_sucrure_hash(body)
+        "secureHash" => generate_secure_hash(body)
       )
       request_api("/corporateapi/merchant/createexpressaccount", body)
     end
@@ -174,7 +174,7 @@ module EcobankExpress
       }.as_json
       # # generate the secure_hash by ourselves
       # body = body.merge(
-      #   "secure_hash" => generate_sucrure_hash(body["headerRequest"])
+      #   "secure_hash" => generate_secure_hash(body["headerRequest"])
       # )
       request_api("/corporateapi/merchant/createqr", body)
     end
@@ -205,7 +205,7 @@ module EcobankExpress
       }.as_json
       # # generate the secure_hash by ourselves
       # body = body.merge(
-      #   "secure_hash" => generate_sucrure_hash(body)
+      #   "secure_hash" => generate_secure_hash(body)
       # )
       request_api("/corporateapi/merchant/qr", body)
     end
@@ -253,7 +253,7 @@ module EcobankExpress
       }.as_json
       # # generate the secure_hash by ourselves
       # body = body.merge(
-      #   "secureHash" => generate_sucrure_hash(body["paymentHeader"])
+      #   "secureHash" => generate_secure_hash(body["paymentHeader"])
       # )
       request_api("/corporateapi/merchant/payment", body)
     end
@@ -269,7 +269,7 @@ module EcobankExpress
       }.as_json
       # # generate the secure_hash by ourselves
       # body = body.merge(
-      #   "secureHash" => generate_sucrure_hash(body.slice("requestId"))
+      #   "secureHash" => generate_secure_hash(body.slice("requestId"))
       # )
       request_api("/corporateapi/merchant/ecobankafrica/transaction/enquiry", body)
     end
@@ -286,7 +286,7 @@ module EcobankExpress
       }.as_json
       # generate the secure_hash by ourselves
       body = body.merge(
-        "secureHash" => generate_sucrure_hash(body)
+        "secureHash" => generate_secure_hash(body)
       )
       request_api("/corporateapi/merchant/accountbalance", body)
     end
@@ -305,7 +305,7 @@ module EcobankExpress
       }.as_json
       # generate the secure_hash by ourselves
       # body = body.merge(
-      #   "secureHash" => generate_sucrure_hash(body)
+      #   "secureHash" => generate_secure_hash(body)
       # )
       request_api("/corporateapi/merchant/accountinquiry", body)
     end
