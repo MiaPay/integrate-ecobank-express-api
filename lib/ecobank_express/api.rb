@@ -96,7 +96,7 @@ module EcobankExpress
         # "secureHash": "95803de67ceca952bb6469901b32de511e6be8ab6763ae882f82b9b29063298919c1806a3307b2edd3d51620062ee43b663d45375c36c60b08dff7dd648cba10"
       }.as_json
       body = body.merge(
-        "secureHash" => generate_sucrure_hash(body)
+        "secureHash" => generate_secure_hash(body)
       )
       request_api("/corporateapi/merchant/securehash", body)
     end
@@ -165,7 +165,7 @@ module EcobankExpress
         "mobileNumber": "2348089991325",
         "email": "treknfreedom@yahoo.com",
         "area": "Accra",
-        "city": "Accra",        
+        "city": "Accra",
         "referralCode": "123456",
         "mcc": "0000",
         "dynamicQr": "N",
