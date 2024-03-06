@@ -15,12 +15,13 @@ class EcobankExpressAPI
   HTTPARTY_TIMEOUT = 10
   RETRY_TIMES = 3
   API_CONFIG = {
-    user_id: "xx",
-    password: "xx",
-    lab_key: "xx"
+    # credentials available in accompanying google doc
+    user_id: nil,
+    password: nil,
+    lab_key: nil
   }
   # ACCESS_TOKEN
-  ACCESS_TOKEN = "eyxx"
+  ACCESS_TOKEN = nil 
 
   base_uri "https://developer.ecobank.com"
 
@@ -46,7 +47,7 @@ class EcobankExpressAPI
               rescue StandardError => error
                 raise "ecobank express api error: #{error.message}"
               end
-    puts "token: #{response["token"]}"
+    #puts "token: #{response["token"]}"
     response["token"]
   end
 
@@ -61,13 +62,16 @@ class EcobankExpressAPI
       "Origin" => "developer.ecobank.com",
       "Authorization" => "Bearer #{get_token}"
     }
-    puts "request: method: post, url: #{path}, body: #{body}"
+    puts JSON.pretty_generate({request: {method: 'post', url: path, body: body}})
     response = begin
                 post(path, body: JSON.pretty_generate(body), headers: headers)
               rescue *HTTP_ERRORS => error
                 (tries -= 1) > 0 ? retry : { "msg" => "Timeout" }
               end
-    puts "response: #{response.code.to_s == "405" ? "#{response.code} #{response.message}" : response }\n\n"
+    #puts JSON.pretty_generate({response: (response.code.to_s == "405" ? "#{response.code} #{response.message}" : response })) # i don't understand this conditional at all
+    puts JSON.pretty_generate({response: {code: response.code, message: response.message}})
+    puts
+    puts
     response
   end
 
@@ -231,7 +235,21 @@ class EcobankExpressAPI
           {
               "request_id": "RE001",
               "request_type": "token",
-              "param_list": "[{\"key\":\"transactionDescription\", \"value\":\"Service payment for tickets.\"},{\"key\":\"secretCode\", \"value\":\"AWER1235\"},{\"key\":\"sourceAccount\",\"value\":\"1441000565307\"},{\"key\":\"sourceAccountCurrency\", \"value\":\"GHS\"},{\"key\":\"sourceAccountType\", \"value\":\"Corporate\"},{\"key\":\"senderName\", \"value\":\"Freeman Kay\"},{\"key\":\"ccy\", \"value\":\"GHS\"},{\"key\":\"senderMobileNo\", \"value\":\"0202205113\"},{\"key\":\"amount\", \"value\":\"40\"},{\"key\":\"senderId\", \"value\":\"QWE345Y4\"},{\"key\":\"beneficiaryName\", \"value\":\"Stephen Kojo\"},{\"key\":\"beneficiaryMobileNo\", \"value\":\"0233445566\"},{\"key\":\"withdrawalChannel\", \"value\":\"ATM\"}]",
+              "param_list": [
+                  {"key":"transactionDescription", "value":"Service payment for tickets."},
+                  {"key":"secretCode", "value":"AWER1235"},
+                  {"key":"sourceAccount","value":"1441000565307"},
+                  {"key":"sourceAccountCurrency", "value":"GHS"},
+                  {"key":"sourceAccountType", "value":"Corporate"},
+                  {"key":"senderName", "value":"Freeman Kay"},
+                  {"key":"ccy", "value":"GHS"},
+                  {"key":"senderMobileNo", "value":"0202205113"},
+                  {"key":"amount", "value":"40"},
+                  {"key":"senderId", "value":"QWE345Y4"},
+                  {"key":"beneficiaryName", "value":"Stephen Kojo"},
+                  {"key":"beneficiaryMobileNo", "value":"0233445566"},
+                  {"key":"withdrawalChannel", "value":"ATM"}
+                ],
               "amount": 40,
               "currency": "GHS",
               "status": "",
@@ -240,7 +258,19 @@ class EcobankExpressAPI
           {
               "request_id": "RE002",
               "request_type": "INTERBANK",
-              "param_list": "[{\"key\":\"destinationBankCode\", \"value\":\"ASB\"},{\"key\":\"senderName\", \"value\":\"BEN\"},{\"key\":\"senderAddress\", \"value\":\"23 Accra Central\"},{\"key\":\"senderPhone\", \"value\":\"233263653712\"},{\"key\":\"beneficiaryAccountNo\",\"value\":\"110424812001\"},{\"key\":\"beneficiaryName\", \"value\":\"Owen\"},{\"key\":\"beneficiaryPhone\", \"value\":\"233543837123\"},{\"key\":\"transferReferenceNo\", \"value\":\"QWE345Y4\"},{\"key\":\"amount\", \"value\":\"10\"},{\"key\":\"ccy\", \"value\":\"GHS\"},{\"key\":\"transferType\", \"value\":\"spot\"}]",
+              "param_list": [
+                {"key":"destinationBankCode", "value":"ASB"},
+                {"key":"senderName", "value":"BEN"},
+                {"key":"senderAddress", "value":"23 Accra Central"},
+                {"key":"senderPhone", "value":"233263653712"},
+                {"key":"beneficiaryAccountNo","value":"110424812001"},
+                {"key":"beneficiaryName", "value":"Owen"},
+                {"key":"beneficiaryPhone", "value":"233543837123"},
+                {"key":"transferReferenceNo", "value":"QWE345Y4"},
+                {"key":"amount", "value":"10"},
+                {"key":"ccy", "value":"GHS"},
+                {"key":"transferType", "value":"spot"}
+              ],
               "amount": 12,
               "currency": "GHS",
               "status": "",
@@ -309,7 +339,7 @@ class EcobankExpressAPI
   end
 end
 
-# EcobankExpressAPI.generate_token
+EcobankExpressAPI.generate_token
 EcobankExpressAPI.check_secure_hash
 EcobankExpressAPI.create_account_opening
 EcobankExpressAPI.get_merchant_category_code
