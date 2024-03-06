@@ -1,3 +1,8 @@
+
+# test code to access the EcoBank XpressAccount API
+# documentation: https://documenter.getpostman.com/view/9576712/2s7YtWCtNX#intro
+
+
 # frozen_string_literal: true
 require "httparty"
 
@@ -16,7 +21,6 @@ class EcobankExpressAPI
   RETRY_TIMES = 3
   API_CONFIG = {
     # credentials available in accompanying google doc
-    
   }
   # ACCESS_TOKEN
   ACCESS_TOKEN = nil 
@@ -92,7 +96,7 @@ class EcobankExpressAPI
       "param2": "Gildas",
       "param3": "MILANDOU",
       "param4": "Ecobank",
-      "param5": "Group",
+      "param5": "Group"
     }
 
   TEST_ACCOUNT_CREATION_PARAMETERS = {
