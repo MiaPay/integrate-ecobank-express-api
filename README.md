@@ -19,6 +19,8 @@ bundle install
 rails db:create db:migrate db:seed
 ```
 
+Or you can go to the single_file directory, and just follow the readme(in the single_file directory) to execute “ecobank_express_api.rb” ruby file. This way you don’t need to setup the rails service.
+
 ## Test
 
 - Execute command `rails console` to enter the console
