@@ -16,9 +16,7 @@ class EcobankExpressAPI
   RETRY_TIMES = 3
   API_CONFIG = {
     # credentials available in accompanying google doc
-    user_id: nil,
-    password: nil,
-    lab_key: nil
+    
   }
   # ACCESS_TOKEN
   ACCESS_TOKEN = nil 
@@ -62,14 +60,15 @@ class EcobankExpressAPI
       "Origin" => "developer.ecobank.com",
       "Authorization" => "Bearer #{get_token}"
     }
-    puts JSON.pretty_generate({request: {method: 'post', url: path, body: body}})
+    puts ">>>>>>>>>>> request:"
+    puts JSON.pretty_generate({method: 'post', url: path, body: body})
     response = begin
                 post(path, body: JSON.pretty_generate(body), headers: headers)
               rescue *HTTP_ERRORS => error
                 (tries -= 1) > 0 ? retry : { "msg" => "Timeout" }
               end
-    #puts JSON.pretty_generate({response: (response.code.to_s == "405" ? "#{response.code} #{response.message}" : response })) # i don't understand this conditional at all
-    puts JSON.pretty_generate({response: {code: response.code, message: response.message}})
+    puts "<<<<<<<<<<< response:"
+    pp response 
     puts
     puts
     response
@@ -86,27 +85,17 @@ class EcobankExpressAPI
     result = message_digest.unpack1('H*')
   end
 
-  # Execute statement in rails console: `EcobankExpressAPI.check_secure_hash`
-  # response_message: "success"
-  def self.check_secure_hash
-    body = {
+ 
+
+  TEST_SECURE_HASH_PARAMETERS = {
       "param1": "Aymard",
       "param2": "Gildas",
       "param3": "MILANDOU",
       "param4": "Ecobank",
       "param5": "Group",
-      # "secureHash": "95803de67ceca952bb6469901b32de511e6be8ab6763ae882f82b9b29063298919c1806a3307b2edd3d51620062ee43b663d45375c36c60b08dff7dd648cba10"
     }
-    body = body.merge(
-      "secureHash" => generate_secure_hash(body)
-    )
-    request_api("/corporateapi/merchant/securehash", body)
-  end
 
-  # Execute statement in rails console: `EcobankExpressAPI.create_account_opening`
-  # response_message: "Invalid security parameters provided"
-  def self.create_account_opening
-    body = {
+  TEST_ACCOUNT_CREATION_PARAMETERS = {
       "requestId": "ECO76383823",
       "affiliateCode": "ENG",
       "firstName": "Rotimi",
@@ -125,13 +114,111 @@ class EcobankExpressAPI
       "city": "Accra",
       "state": "Accra",
       "street": "Labone",
-      # "secureHash": "a43aa74662060b7b9c942dd7ace565a0919118db758bcd71a0f5c7cd7e349f6309b02866b6156ef9171a1b23119c71e77db2edd38cc89963d7f34b541d6dc461"
-    }
+  }
+
+
+
+ # Execute statement in rails console: `EcobankExpressAPI.check_secure_hash`
+  # response_message: "success"
+  def self.check_secure_hash
+
+    puts "Testing with the secureHash examples - this SUCCEEDS"
+    body = TEST_SECURE_HASH_PARAMETERS
+    body = body.merge(
+      secureHash: generate_secure_hash(body)
+    )
+    request_api("/corporateapi/merchant/securehash", body)
+    
+    puts "Testing with the creatAccount example - this FAILS"
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
+    body = body.merge(
+      secureHash: generate_secure_hash(body)
+    )
+    request_api("/corporateapi/merchant/securehash", body)
+  end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Execute statement in rails console: `EcobankExpressAPI.create_account_opening`
+  # response_message: "Invalid security parameters provided"
+  def self.create_account_opening_succeeds
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
+    request_api("/corporateapi/merchant/createexpressaccount", body)
+  end
+
+   def self.create_account_opening_fails
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
     body = body.merge(
       "secureHash" => generate_secure_hash(body)
     )
     request_api("/corporateapi/merchant/createexpressaccount", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.get_merchant_category_code`
   # Success
@@ -146,6 +233,26 @@ class EcobankExpressAPI
     }
     request_api("/corporateapi/merchant/getmcc", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.create_merchant_qrcode`
   # Using secure_hash in the test case, the result is success,
@@ -180,6 +287,22 @@ class EcobankExpressAPI
     # )
     request_api("/corporateapi/merchant/createqr", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.create_merchant_qrcode`
   # Using secure_hash in the test case, the result is success,
@@ -339,13 +462,16 @@ class EcobankExpressAPI
   end
 end
 
-EcobankExpressAPI.generate_token
+#EcobankExpressAPI.generate_token
+puts "Trying to test the secure hash feature"
 EcobankExpressAPI.check_secure_hash
-EcobankExpressAPI.create_account_opening
-EcobankExpressAPI.get_merchant_category_code
-EcobankExpressAPI.create_merchant_qrcode
-EcobankExpressAPI.dynamic_qr_payment
-EcobankExpressAPI.payment
-EcobankExpressAPI.transaction_enquiry
-EcobankExpressAPI.get_account_balance
-EcobankExpressAPI.get_account_enquiry
+#puts "Trying to open an account"
+#EcobankExpressAPI.create_account_opening_succeeds
+#EcobankExpressAPI.create_account_opening_fails
+#EcobankExpressAPI.get_merchant_category_code
+#EcobankExpressAPI.create_merchant_qrcode
+#EcobankExpressAPI.dynamic_qr_payment
+#EcobankExpressAPI.payment
+#EcobankExpressAPI.transaction_enquiry
+#EcobankExpressAPI.get_account_balance
+#EcobankExpressAPI.get_account_enquiry
