@@ -5,23 +5,33 @@ application up and running.
 
 ## Tech Stack
 
-- Ruby: 3.0.2
-- Rails: 6.1.4
+- Ruby: 3.x
 
 ## Setup
 
 ```
-intsall psql & redis
-git clone git@github.com:MiaPay/integrate-ecobank-express-api.git
-echo "<master.key>" > config/master.key
-#yarn install
-bundle install
-rails db:create db:migrate db:seed
+gem install httparty
 ```
-
-Or you can go to the single_file directory, and just follow the readme(in the single_file directory) to execute “ecobank_express_api.rb” ruby file. This way you don’t need to setup the rails service.
+- open ecobank_express_api.rb file to change the constants API_CONFIG and ACCESS_TOKEN
+- The constant ACESS_TOKEN can be generated from `EcobankExpressAPI.generate_token`
+ method, or you can generate it manually from Token Generation API
 
 ## Test
 
-- Execute command `rails console` to enter the console
-- Then you can call the encapsulated method to call the ecobank interface, such as `EcobankExpress::API.create_account_opening `
+- Execute command `ruby ecobank_express_api.rb` to call the ecobank interfaces
+- If you only want to call one of the interfaces, you can comment out the other calling methods.
+
+For example, if you only want to call the Create Account Opening interface, the code at the bottom of the "ecobank_express_api.rb" file becomes:
+```
+# EcobankExpressAPI.generate_token
+# EcobankExpressAPI.check_secure_hash
+EcobankExpressAPI.create_account_opening
+# EcobankExpressAPI.get_merchant_category_code
+# EcobankExpressAPI.create_merchant_qrcode
+# EcobankExpressAPI.dynamic_qr_payment
+# EcobankExpressAPI.payment
+# EcobankExpressAPI.transaction_enquiry
+# EcobankExpressAPI.get_account_balance
+# EcobankExpressAPI.get_account_enquiry
+```
+Then save the file and re-execute the command `ruby ecobank_express_api.rb`

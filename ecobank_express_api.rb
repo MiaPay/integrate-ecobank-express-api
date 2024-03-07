@@ -1,3 +1,8 @@
+
+# test code to access the EcoBank XpressAccount API
+# documentation: https://documenter.getpostman.com/view/9576712/2s7YtWCtNX#intro
+
+
 # frozen_string_literal: true
 require "httparty"
 
@@ -15,12 +20,10 @@ class EcobankExpressAPI
   HTTPARTY_TIMEOUT = 10
   RETRY_TIMES = 3
   API_CONFIG = {
-    user_id: "xx",
-    password: "xx",
-    lab_key: "xx"
+    # credentials available in accompanying google doc
   }
   # ACCESS_TOKEN
-  ACCESS_TOKEN = "eyxx"
+  ACCESS_TOKEN = nil 
 
   base_uri "https://developer.ecobank.com"
 
@@ -46,7 +49,7 @@ class EcobankExpressAPI
               rescue StandardError => error
                 raise "ecobank express api error: #{error.message}"
               end
-    puts "token: #{response["token"]}"
+    #puts "token: #{response["token"]}"
     response["token"]
   end
 
@@ -61,13 +64,17 @@ class EcobankExpressAPI
       "Origin" => "developer.ecobank.com",
       "Authorization" => "Bearer #{get_token}"
     }
-    puts "request: method: post, url: #{path}, body: #{body}"
+    puts ">>>>>>>>>>> request:"
+    puts JSON.pretty_generate({method: 'post', url: path, body: body})
     response = begin
                 post(path, body: JSON.pretty_generate(body), headers: headers)
               rescue *HTTP_ERRORS => error
                 (tries -= 1) > 0 ? retry : { "msg" => "Timeout" }
               end
-    puts "response: #{response.code.to_s == "405" ? "#{response.code} #{response.message}" : response }\n\n"
+    puts "<<<<<<<<<<< response:"
+    pp response 
+    puts
+    puts
     response
   end
 
@@ -82,27 +89,17 @@ class EcobankExpressAPI
     result = message_digest.unpack1('H*')
   end
 
-  # Execute statement in rails console: `EcobankExpressAPI.check_secure_hash`
-  # response_message: "success"
-  def self.check_secure_hash
-    body = {
+ 
+
+  TEST_SECURE_HASH_PARAMETERS = {
       "param1": "Aymard",
       "param2": "Gildas",
       "param3": "MILANDOU",
       "param4": "Ecobank",
-      "param5": "Group",
-      # "secureHash": "95803de67ceca952bb6469901b32de511e6be8ab6763ae882f82b9b29063298919c1806a3307b2edd3d51620062ee43b663d45375c36c60b08dff7dd648cba10"
+      "param5": "Group"
     }
-    body = body.merge(
-      "secureHash" => generate_secure_hash(body)
-    )
-    request_api("/corporateapi/merchant/securehash", body)
-  end
 
-  # Execute statement in rails console: `EcobankExpressAPI.create_account_opening`
-  # response_message: "Invalid security parameters provided"
-  def self.create_account_opening
-    body = {
+  TEST_ACCOUNT_CREATION_PARAMETERS = {
       "requestId": "ECO76383823",
       "affiliateCode": "ENG",
       "firstName": "Rotimi",
@@ -121,13 +118,111 @@ class EcobankExpressAPI
       "city": "Accra",
       "state": "Accra",
       "street": "Labone",
-      # "secureHash": "a43aa74662060b7b9c942dd7ace565a0919118db758bcd71a0f5c7cd7e349f6309b02866b6156ef9171a1b23119c71e77db2edd38cc89963d7f34b541d6dc461"
-    }
+  }
+
+
+
+ # Execute statement in rails console: `EcobankExpressAPI.check_secure_hash`
+  # response_message: "success"
+  def self.check_secure_hash
+
+    puts "Testing with the secureHash examples - this SUCCEEDS"
+    body = TEST_SECURE_HASH_PARAMETERS
+    body = body.merge(
+      secureHash: generate_secure_hash(body)
+    )
+    request_api("/corporateapi/merchant/securehash", body)
+    
+    puts "Testing with the creatAccount example - this FAILS"
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
+    body = body.merge(
+      secureHash: generate_secure_hash(body)
+    )
+    request_api("/corporateapi/merchant/securehash", body)
+  end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Execute statement in rails console: `EcobankExpressAPI.create_account_opening`
+  # response_message: "Invalid security parameters provided"
+  def self.create_account_opening_succeeds
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
+    request_api("/corporateapi/merchant/createexpressaccount", body)
+  end
+
+   def self.create_account_opening_fails
+    body = TEST_ACCOUNT_CREATION_PARAMETERS
     body = body.merge(
       "secureHash" => generate_secure_hash(body)
     )
     request_api("/corporateapi/merchant/createexpressaccount", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.get_merchant_category_code`
   # Success
@@ -142,6 +237,26 @@ class EcobankExpressAPI
     }
     request_api("/corporateapi/merchant/getmcc", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.create_merchant_qrcode`
   # Using secure_hash in the test case, the result is success,
@@ -176,6 +291,22 @@ class EcobankExpressAPI
     # )
     request_api("/corporateapi/merchant/createqr", body)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Execute statement in rails console: `EcobankExpressAPI.create_merchant_qrcode`
   # Using secure_hash in the test case, the result is success,
@@ -231,7 +362,21 @@ class EcobankExpressAPI
           {
               "request_id": "RE001",
               "request_type": "token",
-              "param_list": "[{\"key\":\"transactionDescription\", \"value\":\"Service payment for tickets.\"},{\"key\":\"secretCode\", \"value\":\"AWER1235\"},{\"key\":\"sourceAccount\",\"value\":\"1441000565307\"},{\"key\":\"sourceAccountCurrency\", \"value\":\"GHS\"},{\"key\":\"sourceAccountType\", \"value\":\"Corporate\"},{\"key\":\"senderName\", \"value\":\"Freeman Kay\"},{\"key\":\"ccy\", \"value\":\"GHS\"},{\"key\":\"senderMobileNo\", \"value\":\"0202205113\"},{\"key\":\"amount\", \"value\":\"40\"},{\"key\":\"senderId\", \"value\":\"QWE345Y4\"},{\"key\":\"beneficiaryName\", \"value\":\"Stephen Kojo\"},{\"key\":\"beneficiaryMobileNo\", \"value\":\"0233445566\"},{\"key\":\"withdrawalChannel\", \"value\":\"ATM\"}]",
+              "param_list": [
+                  {"key":"transactionDescription", "value":"Service payment for tickets."},
+                  {"key":"secretCode", "value":"AWER1235"},
+                  {"key":"sourceAccount","value":"1441000565307"},
+                  {"key":"sourceAccountCurrency", "value":"GHS"},
+                  {"key":"sourceAccountType", "value":"Corporate"},
+                  {"key":"senderName", "value":"Freeman Kay"},
+                  {"key":"ccy", "value":"GHS"},
+                  {"key":"senderMobileNo", "value":"0202205113"},
+                  {"key":"amount", "value":"40"},
+                  {"key":"senderId", "value":"QWE345Y4"},
+                  {"key":"beneficiaryName", "value":"Stephen Kojo"},
+                  {"key":"beneficiaryMobileNo", "value":"0233445566"},
+                  {"key":"withdrawalChannel", "value":"ATM"}
+                ],
               "amount": 40,
               "currency": "GHS",
               "status": "",
@@ -240,7 +385,19 @@ class EcobankExpressAPI
           {
               "request_id": "RE002",
               "request_type": "INTERBANK",
-              "param_list": "[{\"key\":\"destinationBankCode\", \"value\":\"ASB\"},{\"key\":\"senderName\", \"value\":\"BEN\"},{\"key\":\"senderAddress\", \"value\":\"23 Accra Central\"},{\"key\":\"senderPhone\", \"value\":\"233263653712\"},{\"key\":\"beneficiaryAccountNo\",\"value\":\"110424812001\"},{\"key\":\"beneficiaryName\", \"value\":\"Owen\"},{\"key\":\"beneficiaryPhone\", \"value\":\"233543837123\"},{\"key\":\"transferReferenceNo\", \"value\":\"QWE345Y4\"},{\"key\":\"amount\", \"value\":\"10\"},{\"key\":\"ccy\", \"value\":\"GHS\"},{\"key\":\"transferType\", \"value\":\"spot\"}]",
+              "param_list": [
+                {"key":"destinationBankCode", "value":"ASB"},
+                {"key":"senderName", "value":"BEN"},
+                {"key":"senderAddress", "value":"23 Accra Central"},
+                {"key":"senderPhone", "value":"233263653712"},
+                {"key":"beneficiaryAccountNo","value":"110424812001"},
+                {"key":"beneficiaryName", "value":"Owen"},
+                {"key":"beneficiaryPhone", "value":"233543837123"},
+                {"key":"transferReferenceNo", "value":"QWE345Y4"},
+                {"key":"amount", "value":"10"},
+                {"key":"ccy", "value":"GHS"},
+                {"key":"transferType", "value":"spot"}
+              ],
               "amount": 12,
               "currency": "GHS",
               "status": "",
@@ -309,13 +466,16 @@ class EcobankExpressAPI
   end
 end
 
-# EcobankExpressAPI.generate_token
+#EcobankExpressAPI.generate_token
+puts "Trying to test the secure hash feature"
 EcobankExpressAPI.check_secure_hash
-EcobankExpressAPI.create_account_opening
-EcobankExpressAPI.get_merchant_category_code
-EcobankExpressAPI.create_merchant_qrcode
-EcobankExpressAPI.dynamic_qr_payment
-EcobankExpressAPI.payment
-EcobankExpressAPI.transaction_enquiry
-EcobankExpressAPI.get_account_balance
-EcobankExpressAPI.get_account_enquiry
+#puts "Trying to open an account"
+#EcobankExpressAPI.create_account_opening_succeeds
+#EcobankExpressAPI.create_account_opening_fails
+#EcobankExpressAPI.get_merchant_category_code
+#EcobankExpressAPI.create_merchant_qrcode
+#EcobankExpressAPI.dynamic_qr_payment
+#EcobankExpressAPI.payment
+#EcobankExpressAPI.transaction_enquiry
+#EcobankExpressAPI.get_account_balance
+#EcobankExpressAPI.get_account_enquiry
